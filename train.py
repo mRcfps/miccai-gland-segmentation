@@ -1,6 +1,9 @@
 import argparse
 import os
 import math
+import warnings
+
+warnings.filterwarnings('ignore')
 
 # comment out next three lines if you have access to unlimited GPU
 import tensorflow as tf
@@ -21,6 +24,7 @@ import config
 from data import get_training_generator, get_val_data
 from metrics import iou_score
 from utils import record
+from utils.callbacks import MaskVisualization
 
 
 def build_cli_parser():
@@ -49,6 +53,11 @@ if __name__ == '__main__':
     model.compile(Adam(args.start_lr), loss=bce_jaccard_loss,
                   metrics=['accuracy', iou_score])
 
+    # prepare dataset
+    train_datagen = get_training_generator(
+        os.path.join(args.dataset_path, 'train'), args.batch_size)
+    x_val, y_val = get_val_data(os.path.join(args.dataset_path, 'val'))
+
     record_dir = record.prepare_record_dir()
     record.save_params(record_dir, args)
 
@@ -60,16 +69,14 @@ if __name__ == '__main__':
         CSVLogger(os.path.join(record_dir, 'history.csv'), append=True),
         ReduceLROnPlateau('loss', factor=0.5, min_lr=1e-5, verbose=1),
         TensorBoard(os.path.join(record_dir, 'log')),
+        MaskVisualization(model, record_dir, x_val, y_val),
     ]
 
-    train_datagen = get_training_generator(
-        os.path.join(args.dataset_path, 'train'), args.batch_size)
-    val_data = get_val_data(os.path.join(args.dataset_path, 'val'))
     steps_per_epoch = int(
         math.ceil(config.PATCHES_PER_EPOCH / args.batch_size))
 
     model.fit_generator(train_datagen,
-                        validation_data=val_data,
+                        validation_data=[x_val, y_val],
                         steps_per_epoch=steps_per_epoch,
                         epochs=args.epochs,
                         callbacks=callbacks)
