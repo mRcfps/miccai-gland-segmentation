@@ -64,7 +64,7 @@ def divide_image_to_patches(img, patch_size, stride=None):
         for j in range(0, ext_width - patch_size + 1, stride):
             x.append(ext_img[i:i + patch_size, j:j + patch_size, :])
 
-    return np.array(x).squeeze().astype('uint8')
+    return np.array(x).astype('uint8')
 
 
 def combine_patches_to_image(y_pred, img, stride):
