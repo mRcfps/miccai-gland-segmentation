@@ -21,9 +21,9 @@ from segmentation_models import Unet
 from segmentation_models.losses import bce_jaccard_loss
 
 import config
-from data import get_training_generator, get_val_data
-from metrics import iou_score
 from utils import record
+from utils.data import get_training_generator, get_val_data
+from utils.metrics import iou_score
 from utils.callbacks import MaskVisualization
 
 

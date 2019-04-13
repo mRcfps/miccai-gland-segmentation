@@ -24,7 +24,7 @@ import pandas as pd
 from skimage.io import imread, imsave
 from sklearn.model_selection import train_test_split
 
-from utils import divide_image_to_patches
+from utils.tile import divide_image_to_patches
 
 import config
 
