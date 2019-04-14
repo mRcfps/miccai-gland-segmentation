@@ -3,11 +3,56 @@ A collection of custom keras callbacks.
 """
 
 import os
+from collections import defaultdict
+
+import matplotlib
+
+matplotlib.use('Agg')
 
 import numpy as np
+import matplotlib.pyplot as plt
 from skimage.io import imsave
 
 from keras.callbacks import Callback
+
+
+class LearningCurveVisualization(Callback):
+    """Keras callback for plotting learning curves."""
+
+    def __init__(self, record_dir, save_freq=1):
+        self.record_dir = record_dir
+        self.save_freq = save_freq
+        self.history = defaultdict(list)
+
+        self.curve_dir = os.path.join(record_dir, 'curves')
+        if not os.path.exists(self.curve_dir):
+            os.mkdir(self.curve_dir)
+
+    def on_epoch_end(self, epoch, logs):
+        for k, v in logs.items():
+            self.history[k].append(v)
+
+        if epoch % self.save_freq == 0:
+            self._save_curves()
+
+    def _save_curves(self):
+        for key in self.history.keys():
+            if key.startswith('val_'):
+                continue
+            plt.figure(dpi=200)
+
+            try:
+                plt.plot(self.history[key])
+                plt.plot(self.history['val_' + key])
+            except KeyError:
+                pass
+
+            plt.title('Model ' + key)
+            plt.ylabel(key.capitalize())
+            plt.xlabel('Epoch')
+            plt.legend(['Train', 'Val'])
+            plt.grid(True)
+            plt.savefig(os.path.join(self.curve_dir, '{}.png'.format(key)))
 
 
 class MaskVisualization(Callback):
@@ -25,7 +70,8 @@ class MaskVisualization(Callback):
             os.mkdir(self.viz_dir)
 
         for idx, (img, mask) in enumerate(zip(self.x_val, self.y_val)):
-            mask = self.transform_mask(mask)
+            img = (img * 255).astype('uint8')
+            mask = self._transform_mask(mask).astype('uint8')
             imsave(os.path.join(self.viz_dir, '{}-orig.png'.format(idx)), img)
             imsave(os.path.join(self.viz_dir, '{}-gt.png'.format(idx)), mask)
 
@@ -34,11 +80,11 @@ class MaskVisualization(Callback):
             print('Saving predicted mask to {}.'.format(self.viz_dir))
             y_pred = self.model.predict(self.x_val)
             for idx, mask in enumerate(y_pred):
-                mask = self.transform_mask(mask)
+                mask = self._transform_mask(mask)
                 imsave(os.path.join(self.viz_dir,
                                     '{}-{}.png'.format(idx, epoch)), mask)
 
-    def transform_mask(self, mask):
+    def _transform_mask(self, mask):
         """Transform predict mask to grayscale images."""
 
         n_channels = mask.shape[-1]
@@ -47,4 +93,4 @@ class MaskVisualization(Callback):
         else:
             mask = mask[..., 0]
 
-        return (mask / mask.max()).astype('float32')
+        return (mask * 255 / mask.max()).astype('uint8')
