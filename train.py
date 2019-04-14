@@ -17,6 +17,7 @@ from keras.callbacks import CSVLogger
 from keras.callbacks import ModelCheckpoint
 from keras.callbacks import ReduceLROnPlateau
 from keras.callbacks import TensorBoard
+from keras.callbacks import TerminateOnNaN
 
 from segmentation_models import Unet
 from segmentation_models.losses import bce_jaccard_loss
@@ -70,6 +71,7 @@ if __name__ == '__main__':
     checkpoint_path = os.path.join(record_dir, 'checkpoints',
                                    'weights.{epoch:03d}.hdf5')
     callbacks = [
+        TerminateOnNaN(),
         ModelCheckpoint(checkpoint_path, period=5,
                         save_weights_only=True, verbose=1),
         CSVLogger(os.path.join(record_dir, 'history.csv'), append=True),
