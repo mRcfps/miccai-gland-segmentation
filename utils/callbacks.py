@@ -69,6 +69,8 @@ class MaskVisualization(Callback):
         if not os.path.exists(self.viz_dir):
             os.mkdir(self.viz_dir)
 
+        print(
+            'Saving validation images and ground truth masks to {} ...'.format(self.viz_dir))
         for idx, (img, mask) in enumerate(zip(self.x_val, self.y_val)):
             img = (img * 255).astype('uint8')
             mask = self._transform_mask(mask).astype('uint8')
@@ -77,7 +79,7 @@ class MaskVisualization(Callback):
 
     def on_epoch_end(self, epoch, logs):
         if epoch % self.freq == 0:
-            print('Saving predicted mask to {}.'.format(self.viz_dir))
+            print('Saving predicted mask to {} ...'.format(self.viz_dir))
             y_pred = self.model.predict(self.x_val)
             for idx, mask in enumerate(y_pred):
                 mask = self._transform_mask(mask)

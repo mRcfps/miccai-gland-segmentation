@@ -2,6 +2,7 @@ import argparse
 import os
 import math
 import warnings
+from shutil import copyfile
 
 warnings.filterwarnings('ignore')
 
@@ -25,6 +26,7 @@ from utils import record
 from utils.data import get_training_generator, get_val_data
 from utils.metrics import iou_score
 from utils.callbacks import MaskVisualization
+from utils.callbacks import LearningCurveVisualization
 
 
 def build_cli_parser():
@@ -47,19 +49,23 @@ if __name__ == '__main__':
     parser = build_cli_parser()
     args = parser.parse_args()
 
+    print('Loading and compiling model ...')
     input_shape = (config.PATCH_SIZE, config.PATCH_SIZE, 3)
     model = Unet('densenet121', input_shape=input_shape)
-
     model.compile(Adam(args.start_lr), loss=bce_jaccard_loss,
                   metrics=['accuracy', iou_score])
 
-    # prepare dataset
+    print('Preparing training and validation data ...')
     train_datagen = get_training_generator(
         os.path.join(args.dataset_path, 'train'), args.batch_size)
     x_val, y_val = get_val_data(os.path.join(args.dataset_path, 'val'))
 
+    print('Setting up experiment record directory ...')
     record_dir = record.prepare_record_dir()
     record.save_params(record_dir, args)
+
+    # copy training script
+    copyfile(__file__, os.path.join(record_dir, __file__))
 
     checkpoint_path = os.path.join(record_dir, 'checkpoints',
                                    'weights.{epoch:03d}.hdf5')
