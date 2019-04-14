@@ -1,3 +1,7 @@
+"""
+Utilities for loading training and validation data used in training.
+"""
+
 import glob
 import os
 import random

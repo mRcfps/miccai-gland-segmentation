@@ -7,7 +7,7 @@ from skimage.util import pad
 from skimage.transform import resize
 
 
-def _get_extended_image_size(height: int, width: int, patch_size: int, stride: int) -> (int, int):
+def _get_extended_image_size(height, width, patch_size, stride):
     """Calculate extended height and width for given stride."""
 
     ext_height, ext_width = 0, 0

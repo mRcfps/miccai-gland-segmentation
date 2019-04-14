@@ -1,3 +1,7 @@
+"""
+A collection of custom keras callbacks.
+"""
+
 import os
 
 import numpy as np

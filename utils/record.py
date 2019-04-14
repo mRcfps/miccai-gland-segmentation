@@ -1,3 +1,7 @@
+"""
+Utilities for recording multiple runs of experiments.
+"""
+
 import json
 import os
 from datetime import datetime
