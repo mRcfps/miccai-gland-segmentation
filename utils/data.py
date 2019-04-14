@@ -40,7 +40,7 @@ def get_training_generator(train_dir, batch_size):
 
 
 def get_val_data(val_dir):
-    x_val = np.load(os.path.join(val_dir, 'images.npy'))
+    x_val = np.load(os.path.join(val_dir, 'images.npy')) / 255.
     y_val = np.load(os.path.join(val_dir, 'masks.npy'))
 
     return x_val, y_val
